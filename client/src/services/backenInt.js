@@ -2,8 +2,8 @@ import axios from "axios";
 import { io } from "socket.io-client";
 
 
-const BackendBaseUrl = "https://chat-app-t5dh.onrender.com/api/auth/register";
-const APIBaseUrl = "https://chat-app-t5dh.onrender.com/api/auth/register";
+const BackendBaseUrl = "https://chat-app-t5dh.onrender.com";
+const APIBaseUrl = `${BackendBaseUrl}/api`;
 
 const API = axios.create({
     baseURL: APIBaseUrl,
