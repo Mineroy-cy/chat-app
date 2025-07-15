@@ -10,7 +10,8 @@ const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
-    cors: { origin: "*" }
+    cors: { origin: "https://chat-app-frontend-ip6u.onrender.com", // ✅ Match frontend URL
+    methods: ["GET", "POST"]}
 });
 
 
@@ -18,7 +19,10 @@ const io = new Server(server, {
 require('./socket')(io);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: "https://chat-app-frontend-ip6u.onrender.com",
+  credentials: true
+}));
 app.use(express.json());
 
 // Routes
