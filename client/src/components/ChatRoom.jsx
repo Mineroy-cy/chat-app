@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 
-// Helpers
 const stringToColor = (str) => {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -31,14 +30,8 @@ export default function ChatRoom({ room, messages, user, socket }) {
     socket.on("newMessage", (msg) => {
       setLiveMessages((prev) => [...prev, msg]);
     });
-
-    socket.on("typing", (username) => {
-      setTypingUser(username);
-    });
-
-    socket.on("stopTyping", () => {
-      setTypingUser("");
-    });
+    socket.on("typing", (username) => setTypingUser(username));
+    socket.on("stopTyping", () => setTypingUser(""));
 
     return () => {
       socket.off("newMessage");
@@ -59,7 +52,7 @@ export default function ChatRoom({ room, messages, user, socket }) {
   };
 
   const handleSend = () => {
-    if (chat.trim() === "") return;
+    if (!chat.trim()) return;
     socket.emit("sendMessage", chat);
     setChat("");
     setShowEmojis(false);
@@ -73,9 +66,9 @@ export default function ChatRoom({ room, messages, user, socket }) {
   const allMessages = [...messages, ...liveMessages];
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
-      <header className="pb-4 border-b mb-4">
-        <h2 className="text-2xl font-semibold">{room.name}</h2>
+    <div className="flex flex-col h-[calc(100vh-56px)] md:h-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+      <header className="pb-2 border-b mb-2">
+        <h2 className="text-xl md:text-2xl font-semibold">{room.name}</h2>
       </header>
 
       <div
@@ -105,7 +98,7 @@ export default function ChatRoom({ room, messages, user, socket }) {
                 {getInitials(senderName)}
               </div>
 
-              <div className="max-w-sm">
+              <div className="max-w-xs sm:max-w-sm md:max-w-md">
                 <div
                   className={`text-sm rounded-lg p-3 shadow ${
                     isSelf
@@ -136,7 +129,7 @@ export default function ChatRoom({ room, messages, user, socket }) {
         </div>
       )}
 
-      <div className="relative mt-2 flex items-center gap-2">
+      <div className="relative mt-2 flex items-center gap-2 px-2 pb-2">
         <button
           onClick={() => setShowEmojis(!showEmojis)}
           className="text-xl bg-gray-200 dark:bg-gray-700 rounded p-2 hover:scale-105"

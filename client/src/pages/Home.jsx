@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getRooms, getMessages, socket } from "../services/backenint";
+import { getRooms, getMessages, createRoom, socket } from "../services/backenint";
 import ChatRoom from "../components/ChatRoom";
 
 // Helpers
@@ -19,6 +19,9 @@ export default function Home({ user }) {
   const [rooms, setRooms] = useState([]);
   const [currentRoom, setCurrentRoom] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newRoomName, setNewRoomName] = useState("");
 
   useEffect(() => {
     fetchRooms();
@@ -40,14 +43,64 @@ export default function Home({ user }) {
     setCurrentRoom(room);
     const res = await getMessages(room._id);
     setMessages(res.data);
+    setMenuOpen(false); // close sidebar on mobile
+  };
+
+  const handleCreateRoom = async () => {
+    if (!newRoomName.trim()) return;
+    try {
+      const res = await createRoom(newRoomName);
+      setNewRoomName("");
+      setCreating(false);
+      fetchRooms();
+    } catch (err) {
+      console.error("Room creation failed:", err.message);
+    }
   };
 
   return (
-    <div className="flex h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
-      <aside className="w-1/4 min-w-[240px] bg-gray-100 dark:bg-gray-800 border-r p-4 overflow-y-auto">
-        <div className="mb-6">
+    <div className="flex h-screen flex-col md:flex-row bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+      {/* Mobile Menu Toggle */}
+      <button
+        className="md:hidden p-3 text-left bg-gray-100 dark:bg-gray-800 border-b"
+        onClick={() => setMenuOpen((prev) => !prev)}
+      >
+        ☰ {currentRoom ? currentRoom.name : "Select Room"}
+      </button>
+
+      {/* Sidebar */}
+      <aside
+        className={`md:block md:w-1/4 min-w-[240px] bg-gray-100 dark:bg-gray-800 border-r p-4 overflow-y-auto transition-all duration-200 z-10 ${
+          menuOpen ? "block" : "hidden"
+        } md:relative absolute w-full h-full top-0 left-0`}
+      >
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">Rooms</h2>
+          <button
+            onClick={() => setCreating((prev) => !prev)}
+            className="text-sm px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+          >
+            + New
+          </button>
         </div>
+
+        {/* Create Room Form */}
+        {creating && (
+          <div className="mb-4 flex items-center gap-2">
+            <input
+              className="flex-1 p-2 border rounded bg-white dark:bg-gray-700 dark:text-white text-sm"
+              placeholder="Room name"
+              value={newRoomName}
+              onChange={(e) => setNewRoomName(e.target.value)}
+            />
+            <button
+              onClick={handleCreateRoom}
+              className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
+            >
+              Create
+            </button>
+          </div>
+        )}
 
         <ul className="space-y-3">
           {rooms.map((room) => (
@@ -73,7 +126,8 @@ export default function Home({ user }) {
         </ul>
       </aside>
 
-      <main className="flex-1 p-6 overflow-hidden">
+      {/* Chat Section */}
+      <main className="flex-1 p-2 md:p-6 overflow-hidden">
         {currentRoom ? (
           <ChatRoom
             room={currentRoom}
