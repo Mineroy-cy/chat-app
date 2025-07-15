@@ -27,18 +27,27 @@ export default function ChatRoom({ room, messages, user, socket }) {
   const msgRef = useRef(null);
 
   useEffect(() => {
-    socket.on("newMessage", (msg) => {
-      setLiveMessages((prev) => [...prev, msg]);
-    });
-    socket.on("typing", (username) => setTypingUser(username));
-    socket.on("stopTyping", () => setTypingUser(""));
+  const handleNewMessage = (msg) => {
+    setLiveMessages((prev) => [...prev, msg]);
+  };
 
-    return () => {
-      socket.off("newMessage");
-      socket.off("typing");
-      socket.off("stopTyping");
-    };
-  }, []);
+  const handleTyping = (username) => setTypingUser(username);
+  const handleStopTyping = () => setTypingUser("");
+
+  socket.on("newMessage", handleNewMessage);
+  socket.on("typing", handleTyping);
+  socket.on("stopTyping", handleStopTyping);
+
+  return () => {
+    socket.off("newMessage", handleNewMessage);
+    socket.off("typing", handleTyping);
+    socket.off("stopTyping", handleStopTyping);
+  };
+}, [room._id]); // 🟡 Important: add dependency so it re-registers listeners when room changes
+
+useEffect(() => {
+  setLiveMessages([]); // Clear messages when switching rooms
+}, [room._id]);
 
   useEffect(() => {
     if (msgRef.current) {
