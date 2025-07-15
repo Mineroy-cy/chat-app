@@ -27,9 +27,14 @@ export default function ChatRoom({ room, messages, user, socket }) {
   const msgRef = useRef(null);
 
   useEffect(() => {
-  const handleNewMessage = (msg) => {
-    setLiveMessages((prev) => [...prev, msg]);
-  };
+ const handleNewMessage = (msg) => {
+  // Avoid adding duplicate message if it's already in the list (by _id or timestamp+content)
+  setLiveMessages((prev) => {
+    const exists = prev.some((m) => m._id === msg._id);
+    return exists ? prev : [...prev, msg];
+  });
+};
+
 
   const handleTyping = (username) => setTypingUser(username);
   const handleStopTyping = () => setTypingUser("");
